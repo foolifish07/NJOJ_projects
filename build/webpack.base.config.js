@@ -5,7 +5,7 @@ var HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
 	entry: {
-		main: './src/main_balloon.js',
+		main: './src/main.js',
         //bootstrap :"./src/bootstrap.min.css",
         //vue: ['vue']
 	},
