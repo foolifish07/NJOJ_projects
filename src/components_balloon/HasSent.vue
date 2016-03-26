@@ -2,27 +2,7 @@
 
 <div class="row" style="margin-top: 30px">
 
-<div class="col-sm-2" v-if="canEdit">
-	<div class="panel panel-primary">
-		<div class="panel-heading"> Users </div>
-		<ul class="list-group">
-			<li class="list-group-item"	v-for="user in users" track-by="$index">
-				{{ user }} 
-
-				<a href="#" v-show="canEdit">
-					<span class="glyphicon glyphicon-plus" style="color: green" 
-						v-show="!inList( user ) "
-						v-on:click="addUser( user )"> </span>
-					<span class="glyphicon glyphicon-minus" style="color: green" 
-						v-show="inList( user ) "
-						v-on:click="deleteUser( user )"> </span>
-				</a>
-			</li>
-		</ul>
-	</div> 
-</div>
-
-<div class="col-sm-{{ canEdit?'10':'12'}}">
+<div class="col-sm-12">
 	<div class="panel panel-primary" >
 		<div class="panel-heading"> {{ title }}</div>
 		<table class="table table-hove">
@@ -37,33 +17,55 @@
 				</tr>
 			</thead>
 			<tbody>
-				<template v-for="item in list" track-by="$index">
-					<tr v-show="filtered( item.username )">
+
+				<template v-for="item in filterList[currentPage]" track-by="$index">
+					<tr>
 						<td> {{ item.submission }}</td>
 						<td> {{ item.username }}</td>
 						<td v-bind:style="{color: color[item.label] }"> {{ item.label }} </td>
 						<td v-bind:style="{color: color[item.label] }"> <label> {{ color[item.label] }}</label> </td>
 						<td> <span class="glyphicon glyphicon-heart" 
-										v-bind:style="{ color: color[item.label] }"
-										v-if="item.isFirstBlood"></span> </td>
+									v-bind:style="{ color: color[item.label] }"
+									v-if="item.isFirstBlood"></span> </td>
 						<td> 
 							<button class="btn btn-primary btn-sm"
-								v-show="!item.isSent">Send</button>
+								v-show="!item.isSent"
+								v-on:click="send_balloon( item )">Send</button>
 							<p v-show="item.isSent"> {{ dateToString(item.sentTime) }} </p> 
 						</td>
 					</tr>
 				</template>
+
 			</tbody>
 		</table>
 	</div>
 </div>
+<nav>
+  <ul class="pagination">
+    <li>
+      <a href="#" aria-label="Previous" v-on:click="prev()">
+        <span aria-hidden="true" >&laquo;</span>
+      </a>
+    </li>
+
+    <template v-for="ele in filterList" track-by="$index">
+    	<li :class=" currentPage===$index?'active':'' ">
+    		<a href="#" v-on:click="setCurrentList($index)"> {{ $index + 1 }}</a></li>
+    </template>
+    
+    <li>
+      <a href="#" aria-label="Next" v-on:click="next()">
+        <span aria-hidden="true" >&raquo;</span>
+      </a>
+    </li>
+  </ul>
+</nav>
 
 </div>
 
 </template>
 
 <script type="text/javascript">
-	
 
 /*
 submission: string
@@ -76,27 +78,16 @@ isSent: boolean
 sentTime: Date
 */
 
-import RoomStore from'./RoomStore.js'
 
 export default {
 	props: {
-		title: {
+		title:{
 			type: String,
-			default: 'Balloon Board',
-		},
-		canEdit: {
-			type: Boolean,
-			default: false,
+			default: "Balloon has Sent",
 		},
 		list: {
 			type: Array,
 			default: function() {
-				return new Array();
-			}
-		},
-		users: {
-			type: Array,
-			default: function(){
 				return new Array();
 			}
 		},
@@ -114,9 +105,25 @@ export default {
 	},
 	data() {
 		return {
-			filterUser: RoomStore.fetch(),
+			pageNum: 5,
+			currentPage: 0,	
 		}
-	},	
+	},
+	computed: {
+		filterList: {
+			get: function(){
+				let list = this.list, pageNum = this.pageNum;
+				let res = new Array;
+				for(let i=0;i<list.length;i+=pageNum){
+					let tmp = list.filter(function(ele, index, arr){
+						return ( i<=index && index<i+pageNum && index<list.length );
+					});
+					res.push( tmp );
+				}
+				return res;
+			}
+		},
+	}	,
 	methods: {
 		dateToString: function( d ) {
 			if ( d===null ) return null;
@@ -125,31 +132,26 @@ export default {
 			return s;
 		},
 
-		filtered: function( name ){
-			return !this.canEdit || this.inList( name );
+		send_balloon :function( item ){
+			this.$dispatch('send_balloon', item );
 		},
 
-		inList: function( name ){
-			return this.filterUser.some(function(ele, index, arr){
-				return name === ele;
-			}) 
+		setCurrentList: function( num ){
+			return this.currentPage = num;
 		},
-		addUser: function(name){
-			this.filterUser.push( name );
-			RoomStore.save( this.filterUser );
-		},
-		deleteUser: function(name){
-			let tmp = this.filterUser;
-			this.filterUser = tmp.filter(function(ele){
-				return ele!=name
-			});
-			RoomStore.save( this.filterUser );
-		}
+		next: function(){
+    	if ( this.currentPage<this.filterList.length )
+    		this.currentPage++;
+    },
+    prev: function(){
+    	if ( this.currentPage>0 )
+    		this.currentPage--;
+	  }
 	}
 }	
 
 </script>
 
 <style type="text/css">
-	
+
 </style>
