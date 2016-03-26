@@ -12,7 +12,7 @@ let list = [
     submission: 1111,
     username: 'Comzyh2',
     userid: 11111,
-    label: 'B',
+    label: 'A',
     isFirstBlood: true,
     isSent: true,
     sentTime: new Date(),
@@ -20,7 +20,7 @@ let list = [
 ]
 
 let users = [
-  'comzyh', 'hdd', 'yangz', 'Comzyh2'
+  'comzyh', 'hdd', 'yangz', 'Comzyh2', 'Comzyh1'
 ]
 
 let problemlist = ['A','B','C','D','E'];
