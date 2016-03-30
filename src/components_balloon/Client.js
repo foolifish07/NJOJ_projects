@@ -51,7 +51,7 @@ function fetch_data(){
   list = new Array(), problemlist = new Array();
   $.ajax({ 
     type: "get", 
-    url: "data", 
+    url: "/balloon/data/", 
     cache:false, 
     async:false, // tong bu
     dataType: "json",
@@ -63,13 +63,13 @@ function fetch_data(){
       for(let i in data.data){
         let item = data.data[i];
         let tmp = {
-          submission: item[4] //key,
-          username: item[0],
-          userid: item[0],
-          label: item[1],
+          submission: item[0],
+          username: item[1],
+          userid: item[1],
+          label: item[2],
           isFirstBlood: false,
-          isSent: item[3]!=null,
-          sentTime: item[3],
+          isSent: item[4]!=null,
+          sentTime: item[4],
         }
         list.push( tmp );
       }
@@ -113,10 +113,12 @@ export default {
     return users;
   },
 
-  send_balloon: function(player, label, sender){
+  send_balloon: function(player, label, sender ){
     let send_time = null; 
+    alert( player );
+    alert( label );
     $.ajax({
-      url: 'data'
+      url: '/balloon/data',
       type: 'post',
       async: false,
       data: {
@@ -124,7 +126,7 @@ export default {
         label: label,
       },
       success: function( data ){
-        return send_time = data.send_time
+        send_time = data.send_time
       },
     })
     return send_time;

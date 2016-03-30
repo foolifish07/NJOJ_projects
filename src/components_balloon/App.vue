@@ -135,12 +135,20 @@
     },
     events: {
       'send_balloon' :function( item ){
-        let res = Client.send_balloon( item.name )
-        if( res.status ){
+        let player = item.username;
+        let label = item.label;
+        let sender = null;
+
+        
+        console.log( item );
+        let res = Client.send_balloon(player, label);
+
+        if( res!=null ){
+          let send_time = res; 
           this.list.forEach(function(ele){
             if ( ele.submission===item.submission ){
               ele.isSent = true;
-              ele.sentTime = res.time;
+              ele.sentTime = send_time;
             }
           });
         }
