@@ -32,34 +32,53 @@
 
   <ul class="nav nav-tabs">
     <li role="presentation" v-bind:class="{'active':currentView==='Main'}">
-      <a href="#" v-on:click="selectView('Main')"> All Balloons </a></li>
+      <a href="#" v-on:click="selectView('Main')"> All </a></li>
     <li role="presentation" v-bind:class="{'active':currentView==='All2Sent'}">
-      <a href="#" v-on:click="selectView('All2Sent')"> All to sent </a></li>
+      <a href="#" v-on:click="selectView('All2Sent')"> All to send </a></li>
     <li role="presentation" v-bind:class="{'active':currentView==='HasSent'}">
-      <a href="#" v-on:click="selectView('HasSent')"> Has sent </a></li>
+      <a href="#" v-on:click="selectView('HasSent')"> All have sent </a></li>
     <li role="presentation" v-bind:class="{'active':currentView==='MyRoom'}">
       <a href="#" v-on:click="selectView('MyRoom')"> MyRoom </a></li>
   </ul>
 
-  <has-sent v-if="currentView=='Main'"
-    :title="Main"
-    :list="list" 
-    :color="color" ></has-sent>
-  <has-sent v-if="currentView=='All2Sent'"
-    :title="All2Sent"
-    :list="tosentList" 
-    :color="color" ></has-sent>
-  <has-sent v-if="currentView=='HasSent'"
-            :title="Balloon has sent"
-            :list="sentList"
-            :color="color" ></has-sent>
+  <!--Sub components -->
+  <div style="margin-top: 30px">
+    <!-- main -->
+    <div v-if="currentView=='Main'">
+      <balloon-table :title="'Main'"
+                :list="list" 
+                :color="color"
+                :page-num="10" ></balloon-table>
+    </div>
 
-  <balloon-table v-if="currentView=='MyRoom'"
-    :title="'MyRoom'"
-    :list="tosentList" 
-    :color="color" 
-    :users="users" 
-    :can-edit="true"></balloon-table>
+    <!-- All2Sent -->
+    <div v-if="currentView=='All2Sent'">
+      <balloon-table 
+                :title="'All2Sent'"
+                :list="tosentList" 
+                :color="color" 
+                :page-num="5" ></balloon-table>
+    </div>
+
+    <!-- HasSent -->
+    <div v-if="currentView=='HasSent'">
+      <balloon-table :title="'Have been sent'"
+                :list="sentList"
+                :color="color"
+                :page-num="5" ></balloon-table>
+    </div>
+
+    <div v-if="currentView=='MyRoom'">
+      <users></users>
+      <balloon-table :title="'MyRoom'"
+                :list="tosentList"
+                :color="color"
+                :page-num="5"
+                :open-white-list="true"
+                :white-list="filterUsers"  ></balloon-table>
+    </div>
+
+  </div>
 
 </div>
   
@@ -68,10 +87,11 @@
 <script>
   
   import BalloonTable from './BalloonTable.vue'
-  import HasSent from './HasSent.vue'
+  import Users from './Users.vue'
 
   import ColorStore from './ColorStore.js'
   import Client from './Client.js'
+  import RoomStore from './RoomStore.js'
 
 	export default {
 		data() {
@@ -80,6 +100,7 @@
         users: Client.fetchUsers(),
         problemlist: Client.fetchProblems(),
         color: ColorStore.fetch(),
+        filterUsers: RoomStore.fetch(),
 
         currentView: 'Main', // Main, HasSent, All2Sent, MyRoom
 			}
@@ -101,7 +122,7 @@
       }
     },
     components: {
-      BalloonTable, HasSent
+      BalloonTable, Users
     },
     methods: {
       saveColor: function(){
@@ -124,6 +145,10 @@
           });
         }
         return true;
+      },
+      'changeWhiteList': function( filterUsers ) {
+        //this.filterUsers = filterUsers;
+        this.filterUsers = RoomStore.fetch();
       }
     }
 	}

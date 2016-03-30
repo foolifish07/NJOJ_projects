@@ -3,7 +3,23 @@ var HtmlWebpackPlugin = require('html-webpack-plugin');
 
 config.output = {
 	path: './dist',
-	filename: '[name].[hash].js'
+	filename: '[name].[hash].js',
+};
+config.devServer= {
+    hot: true,
+    inline: true,
+    progress: true,
+    historyApiFallback: true,
+    proxy: {
+    	// http://0.0.0.0:8080/Contest/715/balloon_data/
+    	'/balloon_data': {
+	    	target: 'http://localhost:9999',
+	        secure: false,
+	        rewrite: function(req) {
+		      	req.url = req.url.replace( /^\/balloon_data/, 'Contest/715/balloon_data/');
+		    },
+        },
+    }
 },
 config.plugins = [
 	new HtmlWebpackPlugin({  

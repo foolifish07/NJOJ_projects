@@ -1,31 +1,11 @@
 <template>
 
 <div class="row" style="margin-top: 30px">
+<div class="col-sm-12">
 
-<div class="col-sm-2" v-if="canEdit">
-	<div class="panel panel-primary">
-		<div class="panel-heading"> Users </div>
-		<ul class="list-group">
-			<li class="list-group-item"	v-for="user in users" track-by="$index">
-				{{ user }} 
-
-				<a href="#" v-show="canEdit">
-					<span class="glyphicon glyphicon-plus" style="color: green" 
-						v-show="!inList( user ) "
-						v-on:click="addUser( user )"> </span>
-					<span class="glyphicon glyphicon-minus" style="color: green" 
-						v-show="inList( user ) "
-						v-on:click="deleteUser( user )"> </span>
-				</a>
-			</li>
-		</ul>
-	</div> 
-</div>
-
-<div class="col-sm-{{ canEdit?'10':'12'}}">
 	<div class="panel panel-primary" >
 		<div class="panel-heading"> {{ title }}</div>
-		<table class="table table-hove">
+		<table class="table table-hove table-condensed">
 			<thead style="font-weight: bold">
 				<tr>
 					<td>Submission</td>
@@ -37,33 +17,56 @@
 				</tr>
 			</thead>
 			<tbody>
-				<template v-for="item in list" track-by="$index">
-					<tr v-show="filtered( item.username )">
+
+				<template v-for="item in pageList[currentPage]" track-by="$index">
+					<tr>
 						<td> {{ item.submission }}</td>
 						<td> {{ item.username }}</td>
 						<td v-bind:style="{color: color[item.label] }"> {{ item.label }} </td>
 						<td v-bind:style="{color: color[item.label] }"> <label> {{ color[item.label] }}</label> </td>
 						<td> <span class="glyphicon glyphicon-heart" 
-										v-bind:style="{ color: color[item.label] }"
-										v-if="item.isFirstBlood"></span> </td>
+									v-bind:style="{ color: color[item.label] }"
+									v-if="item.isFirstBlood"></span> </td>
 						<td> 
 							<button class="btn btn-primary btn-sm"
-								v-show="!item.isSent">Send</button>
+								v-show="!item.isSent"
+								v-on:click="send_balloon( item )">Send</button>
 							<p v-show="item.isSent"> {{ dateToString(item.sentTime) }} </p> 
 						</td>
 					</tr>
 				</template>
+
 			</tbody>
 		</table>
 	</div>
-</div>
 
+	<nav>
+	  <ul class="pagination">
+	    <li>
+	      <a href="#" aria-label="Previous" v-on:click="prev()">
+	        <span aria-hidden="true" >&laquo;</span>
+	      </a>
+	    </li>
+
+	    <template v-for="ele in pageList" track-by="$index">
+	    	<li :class=" currentPage===$index?'active':'' ">
+	    		<a href="#" v-on:click="setCurrentList($index)"> {{ $index + 1 }}</a></li>
+	    </template>
+	    
+	    <li>
+	      <a href="#" aria-label="Next" v-on:click="next()">
+	        <span aria-hidden="true" >&raquo;</span>
+	      </a>
+	    </li>
+	  </ul>
+	</nav>
+	{{ whiteList }}
+</div>
 </div>
 
 </template>
 
 <script type="text/javascript">
-	
 
 /*
 submission: string
@@ -76,17 +79,11 @@ isSent: boolean
 sentTime: Date
 */
 
-import RoomStore from'./RoomStore.js'
-
 export default {
 	props: {
-		title: {
+		title:{
 			type: String,
-			default: 'Balloon Board',
-		},
-		canEdit: {
-			type: Boolean,
-			default: false,
+			default: "Balloon has Sent",
 		},
 		list: {
 			type: Array,
@@ -94,12 +91,22 @@ export default {
 				return new Array();
 			}
 		},
-		users: {
+		pageNum: {
+			type: Number,
+			default: 5,
+		},
+
+		openWhiteList: {
+			type: Boolean,
+			default: false,
+		},
+		whiteList: {
 			type: Array,
-			default: function(){
-				return new Array();
+			default: function() {
+				return new Array;
 			}
 		},
+
 		color: {
 			type: Object,
 			default: function(){
@@ -110,13 +117,29 @@ export default {
 				"V":"#000000","W":"#000000","X":"#000000","Y":"#000000","Z":"#000000"
 				}
 			}
-		}
+		},
 	},
 	data() {
 		return {
-			filterUser: RoomStore.fetch(),
+			// for pagination
+			currentPage: 0,	
 		}
-	},	
+	},
+	computed: {
+		pageList: {
+			get: function(){
+				let list = this.list;
+				
+				if ( this.openWhiteList ){
+					let inWhiteList = this.inWhiteList;
+					list = this.list.filter(function(ele, index, arr){
+						return inWhiteList( ele.username );
+					});
+				}
+				return this.cutList(list, this.pageNum);
+			}
+		},
+	}	,
 	methods: {
 		dateToString: function( d ) {
 			if ( d===null ) return null;
@@ -124,32 +147,47 @@ export default {
 			//return s.substring(0,s.length-15);
 			return s;
 		},
-
-		filtered: function( name ){
-			return !this.canEdit || this.inList( name );
+		// for pagination
+		cutList: function(list, len) {
+			let res = new Array;
+			for(let i=0; i<list.length; i+=len){
+				let tmp = list.filter(function(ele, index, arr){
+					return ( i<=index && index<i+len && index<list.length )
+				});
+				res.push( tmp );
+			}
+			return res;
 		},
 
-		inList: function( name ){
-			return this.filterUser.some(function(ele, index, arr){
+		inWhiteList: function( name ){
+			return this.whiteList.some(function(ele, index, arr){
 				return name === ele;
 			}) 
 		},
-		addUser: function(name){
-			this.filterUser.push( name );
-			RoomStore.save( this.filterUser );
+
+		// send balloon
+		send_balloon :function( item ){
+			this.$dispatch('send_balloon', item );
 		},
-		deleteUser: function(name){
-			let tmp = this.filterUser;
-			this.filterUser = tmp.filter(function(ele){
-				return ele!=name
-			});
-			RoomStore.save( this.filterUser );
-		}
-	}
+
+		// pagination event
+		setCurrentList: function( num ){
+			return this.currentPage = num;
+		},
+		next: function(){
+    	if ( this.currentPage < this.pageList.length-1 )
+    		this.currentPage++;
+    },
+    prev: function(){
+    	if ( this.currentPage > 0 )
+    		this.currentPage--;
+	  }
+	},
+
 }	
 
 </script>
 
 <style type="text/css">
-	
+
 </style>
