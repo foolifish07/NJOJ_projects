@@ -55,7 +55,7 @@ function fetchData(){
   list = new Array(), problemlist = new Array();
   $.ajax({ 
     type: "get", 
-    url: "data", 
+    url: "data/", 
     cache:false, 
     async:false, // tong bu
     dataType: "json",
@@ -122,10 +122,10 @@ export default {
   },
 
   send_balloon: function(player, label, sender ){
-    let send_time = null; 
+    let sent_time = null; 
 
     $.ajax({
-      url: 'data',
+      url: 'data/',
       type: 'post',
       async: false,
       data: {
@@ -133,10 +133,10 @@ export default {
         label: label,
       },
       success: function( data ){
-        if ( data!=null && data.send_time!=null )
-          sent_time = new Date( Date.pars(data.sent_time) );
+        if ( data!=null && data.sent_time!=null )
+          sent_time = new Date( Date.parse(data.sent_time) );
       },
     })
-    return send_time;
+    return sent_time;
   },
 }
