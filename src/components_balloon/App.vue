@@ -1,6 +1,6 @@
 <template>
 
-<div class="container" style="margin-top: 80px">
+<div class="container" style="margin-top: 0px">
 
   <!--table class="table table-condensed text-center ">
     <thead>
@@ -37,8 +37,8 @@
       <a href="#" v-on:click="selectView('All2Sent')"> All to send </a></li>
     <li role="presentation" v-bind:class="{'active':currentView==='HasSent'}">
       <a href="#" v-on:click="selectView('HasSent')"> All have sent </a></li>
-    <li role="presentation" v-bind:class="{'active':currentView==='MyRoom'}">
-      <a href="#" v-on:click="selectView('MyRoom')"> MyRoom </a></li>
+    <!--li role="presentation" v-bind:class="{'active':currentView==='MyRoom'}">
+      <a href="#" v-on:click="selectView('MyRoom')"> MyRoom </a></li-->
   </ul>
 
   <!--Sub components -->
@@ -68,6 +68,7 @@
                 :page-num="5" ></balloon-table>
     </div>
 
+    <!-- all balloon -->
     <div v-if="currentView=='MyRoom'">
       <users></users>
       <balloon-table :title="'MyRoom'"
@@ -137,18 +138,15 @@
       'send_balloon' :function( item ){
         let player = item.username;
         let label = item.label;
-        let sender = null;
 
-        
-        console.log( item );
         let res = Client.send_balloon(player, label);
 
         if( res!=null ){
-          let send_time = res; 
+          let sent_time = res; 
           this.list.forEach(function(ele){
             if ( ele.submission===item.submission ){
               ele.isSent = true;
-              ele.sentTime = send_time;
+              ele.sentTime = sent_time;
             }
           });
         }

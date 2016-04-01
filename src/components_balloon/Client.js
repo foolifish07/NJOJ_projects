@@ -1,4 +1,10 @@
-let comzyh1 = {
+let list = new Array();
+let problemlist = new Array();
+let users = new Array();
+
+// test data 
+(function(){
+  let comzyh1 = {
     submission: 1111,
     username: 'Comzyh1',
     userid: 11111,
@@ -7,51 +13,49 @@ let comzyh1 = {
     isSent: false,
     sentTime: null,
   };
-let comzyh2 = {
-    submission: 22222,
-    username: 'Comzyh2',
-    userid: 11111,
-    label: 'A',
-    isFirstBlood: true,
-    isSent: true,
-    sentTime: new Date(),
-  };
-let comzyh = {
-    submission: 0,
-    username: 'Comzyh1',
-    userid: 11111,
-    label: 'C',
-    isFirstBlood: false,
-    isSent: false,
-    sentTime: null,
+  let comzyh2 = {
+      submission: 22222,
+      username: 'Comzyh2',
+      userid: 11111,
+      label: 'A',
+      isFirstBlood: true,
+      isSent: true,
+      sentTime: new Date(),
+    };
+  let comzyh = {
+      submission: 0,
+      username: 'Comzyh1',
+      userid: 11111,
+      label: 'C',
+      isFirstBlood: false,
+      isSent: false,
+      sentTime: null,
+    }  
+  for(let i=0;i<12;i++){
+    list.push( comzyh );
+    list.push( comzyh1 );
+    list.push( comzyh2 );
   }
-let list = new Array();
-for(let i=0;i<12;i++){
-  list.push( comzyh );
-  list.push( comzyh1 );
-  list.push( comzyh2 );
-}
-
-let users = [
-  'comzyh', 'hdd', 'yangz', 'Comzyh2', 'Comzyh1',
-  'comzyh', 'hdd', 'yangz', 'Comzyh2', 'Comzyh1',
-  'comzyh', 'hdd', 'yangz', 'Comzyh2', 'Comzyh1',
-  'comzyh', 'hdd', 'yangz', 'Comzyh2', 'Comzyh1',
-  'comzyh', 'hdd', 'yangz', 'Comzyh2', 'Comzyh1',
-  'comzyh', 'hdd', 'yangz', 'Comzyh2', 'Comzyh1',
-  'comzyh', 'hdd', 'yangz', 'Comzyh2', 'Comzyh1',
-  'comzyh', 'hdd', 'yangz', 'Comzyh2', 'Comzyh1',
-]
-
-let problemlist = ['A','B','C','D','E'];
+  problemlist = ['A','B'];
+  users = [
+    'comzyh', 'hdd', 'yangz', 'Comzyh2', 'Comzyh1',
+    'comzyh', 'hdd', 'yangz', 'Comzyh2', 'Comzyh1',
+    'comzyh', 'hdd', 'yangz', 'Comzyh2', 'Comzyh1',
+    'comzyh', 'hdd', 'yangz', 'Comzyh2', 'Comzyh1',
+    'comzyh', 'hdd', 'yangz', 'Comzyh2', 'Comzyh1',
+    'comzyh', 'hdd', 'yangz', 'Comzyh2', 'Comzyh1',
+    'comzyh', 'hdd', 'yangz', 'Comzyh2', 'Comzyh1',
+    'comzyh', 'hdd', 'yangz', 'Comzyh2', 'Comzyh1',
+  ]
+}())
 
 
 // fetch data
-function fetch_data(){
+function fetchData(){
   list = new Array(), problemlist = new Array();
   $.ajax({ 
     type: "get", 
-    url: "/balloon/data/", 
+    url: "data", 
     cache:false, 
     async:false, // tong bu
     dataType: "json",
@@ -69,12 +73,15 @@ function fetch_data(){
           label: item[2],
           isFirstBlood: false,
           isSent: item[4]!=null,
-          sentTime: item[4],
+          sentTime: new Date( Date.parse(item[4])  ),
         }
         list.push( tmp );
       }
     },
   });
+
+  getFirstBlood( list );
+
   return {
     list: list, problemlist: problemlist,
   }
@@ -82,7 +89,7 @@ function fetch_data(){
 }
 
 // keep list descending and get firstblood
-(function(){
+let getFirstBlood = function( list ){
   list.sort(function(ele1, ele2){
     return ele2.submission - ele1.submission;
   });
@@ -100,14 +107,15 @@ function fetch_data(){
     let c = list[i].label;
     list[i].isFirstBlood = ( firstBlood[ c ]===list[i].submission );
   }
-}())
+}
 
 export default {
+  fetchData , 
   fetchProblems: function() {
-    return fetch_data().problemlist;
+    return fetchData().problemlist;
   },
   fetchBalloons: function() {
-    return fetch_data().list;
+    return fetchData().list;
   },
   fetchUsers: function(){
     return users;
@@ -115,10 +123,9 @@ export default {
 
   send_balloon: function(player, label, sender ){
     let send_time = null; 
-    alert( player );
-    alert( label );
+
     $.ajax({
-      url: '/balloon/data',
+      url: 'data',
       type: 'post',
       async: false,
       data: {
@@ -126,7 +133,8 @@ export default {
         label: label,
       },
       success: function( data ){
-        send_time = data.send_time
+        if ( data!=null && data.send_time!=null )
+          sent_time = new Date( Date.pars(data.sent_time) );
       },
     })
     return send_time;

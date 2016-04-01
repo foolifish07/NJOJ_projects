@@ -12,11 +12,11 @@ config.devServer= {
     historyApiFallback: true,
     proxy: {
     	// http://0.0.0.0:8080/Contest/715/balloon_data/
-    	'/balloon/*': {
+    	'/data': {
 	    	target: 'http://localhost:9999',
 	        secure: false,
 	        rewrite: function(req) {
-		      	req.url = req.url.replace( /^\/balloon/, 'Contest/715/balloon/');
+		      	req.url = req.url.replace( /^\/data/, 'Contest/715/balloon/data/');
 		    },
         },
     }

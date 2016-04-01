@@ -9,7 +9,7 @@ config.plugins = [
 	new HtmlWebpackPlugin({  
 	    filename: 'index.html',
 	    template: 'src/index_prod.html',
-	    inject: true
+	    inject: false
     })
 ]
 
